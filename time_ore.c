@@ -24,6 +24,12 @@
 static int _err;
 #define ERR_CHECK(x) if((_err = x) != ERROR_NONE) { return _err; }
 
+/**
+ * Benchmarking code for ORE scheme. Measures time to encrypt random values
+ * and time to compare ORE ciphertexts. The number of iterations is scaled
+ * with the approximate run-time of each operation. The block size for all
+ * benchmarks is fixed at 2 (smallest possible).
+ */
 int main(int argc, char** argv) {
   const uint32_t NBITS[] = {8, 16, 24, 32, 48, 64};
   const uint32_t OUT_BLK_LEN = 2;
@@ -37,8 +43,17 @@ int main(int argc, char** argv) {
 
   uint32_t nbits_len = sizeof(NBITS) / sizeof(int);
 
-  printf("%2s %2s %8s %12s %12s %8s %12s %12s %10s\n",
-         "n", "k", "iter", "enc avg", "enc total", "iter", "cmp avg", "cmp total", "len");
+#ifdef USE_AES
+  printf("Instantiating PRF with AES\n\n");
+#else
+  printf("Instantiating PRF with HMAC-SHA256\n\n");
+#endif
+
+  printf("n = bit length of plaintext space\n");
+  printf("k = block size (in bits)\n\n");
+
+  printf("%2s %2s %8s %15s %15s %8s %15s %15s %15s\n",
+         "n", "k", "iter", "enc avg (us)", "enc total (s)", "iter", "cmp avg (us)", "cmp total (s)", "len (bytes)");
 
   for (int i = 0; i < nbits_len; i++) {
     ore_params params;
@@ -71,7 +86,7 @@ int main(int argc, char** argv) {
     double cmp_time_elapsed = (double)(clock() - start_time) / CLOCKS_PER_SEC;
     double cmp_time = cmp_time_elapsed / N_CMP_TRIALS * 1000000;
 
-    printf("%2d %2d %8d %12.2f %12.2f %8d %12.2f %12.2f %10d\n",
+    printf("%2d %2d %8d %15.2f %15.2f %8d %15.2f %15.2f %15d\n",
          NBITS[i], OUT_BLK_LEN, enc_trials, enc_time, enc_time_elapsed,
          N_CMP_TRIALS, cmp_time, cmp_time_elapsed, ore_ciphertext_size(params));
 

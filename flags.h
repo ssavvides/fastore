@@ -17,10 +17,19 @@
 #ifndef __FLAGS_H__
 #define __FLAGS_H__
 
-// Set this flag to use AES as the underlying PRF (rather than HMAC).
-// Currently, we only support encrypting 64-bit values when AES is the underlying
-// PRF. The HMAC implementation supports encrypting larger messages.
+// Set this flag to use AES as the underlying PRF (rather than HMAC) for the
+// basic ORE construction (ore). Currently, we only support encrypting 64-bit
+// values when AES is the underlying PRF. The HMAC implementation supports
+// encrypting messages from an arbitrary plaintext space.
 
 #define USE_AES
+
+// Set this flag to use AES to instantiate the random oracle in the block ORE
+// (ore_blk) construction. This construction can be proven secure if we, for
+// instance, model AES as an ideal cipher (see Section 7 of the paper for a
+// full discussion: http://eprint.iacr.org/2016/612.pdf). If this flag is
+// turned off, then the random oracle is instantiated using SHA-256.
+
+#define USE_AES_RO
 
 #endif /* __FLAGS_H__ */
