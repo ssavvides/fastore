@@ -14,6 +14,18 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+/**
+ * This is an implementation of the order-revealing encryption scheme from the
+ * paper Practical Order-Revealing Encryption with Limited Leakage
+ * (http://eprint.iacr.org/2015/1125) published in FSE, 2016. For options on
+ * instantiating the PRF, refer to the "USE_AES" flag in flags.h. Currently,
+ * we support instantiating the PRF using HMAC and AES. Note that the AES
+ * implementation currently only supports encrypting messages with up to 64
+ * bits (there is no such restriction with the HMAC implementation). The AES
+ * implementation is likely to be substantially faster if the machine supports
+ * the AES-NI instruction set.
+ */
+
 #ifndef __ORE_H__
 #define __ORE_H__
 
@@ -25,9 +37,9 @@
 
 // the public parameters for the encryption scheme, used to compare ciphertexts
 typedef struct {
-  bool initialized;   // whether or not these parameters have been initialized
-  uint32_t nbits;     // the number of bits to represent a plaintext to encrypt
-  uint32_t block_len; // the number of bits in each block passed to the PRF
+  bool initialized;     // whether or not these parameters have been initialized
+  uint32_t nbits;       // the number of bits in the plaintext elements
+  uint32_t out_blk_len; // the number of bits in each output block of the PRF
 } ore_params[1];
 
 // the secret key for the encryption scheme, used to perform encryption
@@ -48,13 +60,13 @@ typedef struct {
  * Initializes an ore_params type by setting its parameters, number of bits and
  * block length.
  *
- * @param nbits     The number of bits of an input to the encryption scheme
- * @param block_len The length (in bits) of each block to be encrypted by a PRF
+ * @param nbits       The number of bits of an input to the encryption scheme
+ * @param out_blk_len The length (in bits) of each block to be encrypted by a PRF
  *
  * @return ERROR_NONE on success, ERROR_PARAMS_INVALID if the parameter settings
  *         are invalid.
  */
-int init_ore_params(ore_params params, uint32_t nbits, uint32_t block_len);
+int init_ore_params(ore_params params, uint32_t nbits, uint32_t out_blk_len);
 
 /**
  * Initializes the secret key by sampling a PRF key and copying the public

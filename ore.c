@@ -31,7 +31,9 @@
  * @return 1 if they are equal, 0 otherwise
  */
 static bool _eq_ore_params(ore_params params1, ore_params params2) {
-  return memcmp(params1, params2, sizeof(ore_params)) == 0;
+  return (params1->initialized == params2->initialized) &&
+         (params1->nbits == params2->nbits) &&
+         (params1->out_blk_len == params2->out_blk_len);
 }
 
 /**
@@ -46,18 +48,18 @@ static bool _is_valid_params(ore_params params) {
   // assuming binary representation
   if (!params->initialized) {
     return false;
-  } else if (params->block_len < 2) {
+  } else if (params->out_blk_len < 2) {
     return false;
-  } else if (params->block_len / 8 > PRF_OUTPUT_BYTES) {
+  } else if (params->out_blk_len / 8 > PRF_OUTPUT_BYTES) {
     return false;
   }
   return true;
 }
 
-int init_ore_params(ore_params params, uint32_t nbits, uint32_t block_len) {
+int init_ore_params(ore_params params, uint32_t nbits, uint32_t out_blk_len) {
   params->initialized = true;
   params->nbits = nbits;
-  params->block_len = block_len;
+  params->out_blk_len = out_blk_len;
 
   if (!_is_valid_params(params)) {
     return ERROR_PARAMS_INVALID;
@@ -136,14 +138,14 @@ static int _ore_encrypt_buf(ore_ciphertext ctxt, ore_secret_key sk, byte* buf,
 #endif
 
   uint32_t nbits = ctxt->params->nbits;
-  uint32_t block_len = ctxt->params->block_len;
-  uint32_t nbytes_block = (block_len + 7) / 8;
+  uint32_t out_blk_len = ctxt->params->out_blk_len;
+  uint32_t nbytes_block = (out_blk_len + 7) / 8;
 
-  // set block_mask to 2^block_len - 1, corresponding to the least significant
-  // (block_len - 1) bits
+  // set block_mask to 2^out_blk_len - 1, corresponding to the least significant
+  // (out_blk_len - 1) bits
   mpz_t block_mask;
   mpz_init(block_mask);
-  mpz_setbit(block_mask, block_len);
+  mpz_setbit(block_mask, out_blk_len);
   mpz_sub_ui(block_mask, block_mask, 1);
 
   uint32_t nbytes = (nbits + 7) / 8;
@@ -190,7 +192,7 @@ static int _ore_encrypt_buf(ore_ciphertext ctxt, ore_secret_key sk, byte* buf,
       mpz_add_ui(ctxt_block, ctxt_block, 1);
     }
     mpz_and(ctxt_block, ctxt_block, block_mask);
-    mpz_mul_2exp(ctxt_block, ctxt_block, (nbits - i - 1) * block_len);
+    mpz_mul_2exp(ctxt_block, ctxt_block, (nbits - i - 1) * out_blk_len);
     mpz_ior(ctxt_val, ctxt_val, ctxt_block);
 
     // add the current bit of the message to the running prefix
@@ -201,7 +203,7 @@ static int _ore_encrypt_buf(ore_ciphertext ctxt, ore_secret_key sk, byte* buf,
   }
 
   size_t bytes_written;
-  uint32_t expected_len = (nbits * block_len + 7) / 8;
+  uint32_t expected_len = (nbits * out_blk_len + 7) / 8;
 
   mpz_export(ctxt->buf, &bytes_written, 1, 1, -1, 0, ctxt_val);
   if (bytes_written < expected_len) {
@@ -234,8 +236,8 @@ int ore_compare(int* result_p, ore_ciphertext ctxt1, ore_ciphertext ctxt2) {
   }
 
   uint32_t nbits = ctxt1->params->nbits;
-  uint32_t block_len = ctxt1->params->block_len;
-  uint32_t len = (nbits * block_len + 7) / 8;
+  uint32_t out_blk_len = ctxt1->params->out_blk_len;
+  uint32_t len = (nbits * out_blk_len + 7) / 8;
 
   mpz_t ctxt1_val;
   mpz_init(ctxt1_val);
@@ -245,17 +247,17 @@ int ore_compare(int* result_p, ore_ciphertext ctxt1, ore_ciphertext ctxt2) {
   mpz_init(ctxt2_val);
   mpz_import(ctxt2_val, len, 1, 1, -1, 0, ctxt2->buf);
 
-  // set the modulus to 2^block_len
+  // set the modulus to 2^out_blk_len
   mpz_t modulus;
   mpz_init(modulus);
-  mpz_setbit(modulus, block_len);
+  mpz_setbit(modulus, out_blk_len);
 
-  // construct the block mask to 2^block_len - 1 (and shift accordingly
+  // construct the block mask to 2^out_blk_len - 1 (and shift accordingly
   // to extract each of the ciphertext blocks)
   mpz_t block_mask;
   mpz_init(block_mask);
   mpz_sub_ui(block_mask, modulus, 1);
-  mpz_mul_2exp(block_mask, block_mask, (nbits - 1) * block_len);
+  mpz_mul_2exp(block_mask, block_mask, (nbits - 1) * out_blk_len);
 
   mpz_t tmp1;
   mpz_init(tmp1);
@@ -269,8 +271,8 @@ int ore_compare(int* result_p, ore_ciphertext ctxt1, ore_ciphertext ctxt2) {
     mpz_and(tmp1, ctxt1_val, block_mask);
     mpz_and(tmp2, ctxt2_val, block_mask);
 
-    mpz_cdiv_q_2exp(tmp1, tmp1, (nbits - i - 1) * block_len);
-    mpz_cdiv_q_2exp(tmp2, tmp2, (nbits - i - 1) * block_len);
+    mpz_cdiv_q_2exp(tmp1, tmp1, (nbits - i - 1) * out_blk_len);
+    mpz_cdiv_q_2exp(tmp2, tmp2, (nbits - i - 1) * out_blk_len);
 
     mpz_sub(tmp1, tmp1, tmp2);
     mpz_mod(tmp1, tmp1, modulus);
@@ -282,7 +284,7 @@ int ore_compare(int* result_p, ore_ciphertext ctxt1, ore_ciphertext ctxt2) {
       break;
     }
 
-    mpz_cdiv_q_2exp(block_mask, block_mask, block_len);
+    mpz_cdiv_q_2exp(block_mask, block_mask, out_blk_len);
   }
 
   mpz_clear(ctxt1_val);
@@ -305,7 +307,7 @@ int init_ore_ciphertext(ore_ciphertext ctxt, ore_params params) {
     return ERROR_NULL_POINTER;
   }
 
-  uint32_t len = (params->nbits * params->block_len + 7) / 8;
+  uint32_t len = (params->nbits * params->out_blk_len + 7) / 8;
   ctxt->buf = malloc(len);
   if (ctxt->buf == NULL) {
     return ERROR_MEMORY_ALLOCATION;
@@ -322,7 +324,7 @@ int clear_ore_ciphertext(ore_ciphertext ctxt) {
     return ERROR_NONE;
   }
 
-  uint32_t len = (ctxt->params->nbits * ctxt->params->block_len + 7) / 8;
+  uint32_t len = (ctxt->params->nbits * ctxt->params->out_blk_len + 7) / 8;
   memset(ctxt->buf, 0, len);
   free(ctxt->buf);
 
@@ -332,5 +334,5 @@ int clear_ore_ciphertext(ore_ciphertext ctxt) {
 }
 
 int ore_ciphertext_size(ore_params params) {
-  return (params->nbits * params->block_len + 7) / 8;
+  return (params->nbits * params->out_blk_len + 7) / 8;
 }

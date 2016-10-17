@@ -26,7 +26,7 @@ static int _err;
 
 int main(int argc, char** argv) {
   const uint32_t NBITS[] = {8, 16, 24, 32, 48, 64};
-  const uint32_t BLOCK_LEN = 2;
+  const uint32_t OUT_BLK_LEN = 2;
 #ifdef USE_AES
   const int N_ENC_TRIALS = 2000000;
   const int N_CMP_TRIALS = 2000000;
@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
 
   for (int i = 0; i < nbits_len; i++) {
     ore_params params;
-    ERR_CHECK(init_ore_params(params, NBITS[i], BLOCK_LEN));
+    ERR_CHECK(init_ore_params(params, NBITS[i], OUT_BLK_LEN));
 
     ore_secret_key sk;
     ERR_CHECK(ore_setup(sk, params));
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
     double cmp_time = cmp_time_elapsed / N_CMP_TRIALS * 1000000;
 
     printf("%2d %2d %8d %12.2f %12.2f %8d %12.2f %12.2f %10d\n",
-         NBITS[i], BLOCK_LEN, enc_trials, enc_time, enc_time_elapsed,
+         NBITS[i], OUT_BLK_LEN, enc_trials, enc_time, enc_time_elapsed,
          N_CMP_TRIALS, cmp_time, cmp_time_elapsed, ore_ciphertext_size(params));
 
     ERR_CHECK(clear_ore_ciphertext(ctxt));

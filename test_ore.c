@@ -34,7 +34,7 @@
  * encryption or comparison phase
  */
 static int check_ore() {
-  int nbits = 31, block_len = ((rand() % (nbits - 2)) + 2);
+  int nbits = 31, out_blk_len = ((rand() % (nbits - 2)) + 2);
 
   uint64_t n1 = rand() % (1 << nbits);
   uint64_t n2 = rand() % (1 << nbits);
@@ -47,7 +47,7 @@ static int check_ore() {
   int err;
 
   ore_params params;
-  ERR_CHECK(init_ore_params(params, nbits, block_len));
+  ERR_CHECK(init_ore_params(params, nbits, out_blk_len));
 
   ore_secret_key sk;
   ERR_CHECK(ore_setup(sk, params));
@@ -57,9 +57,6 @@ static int check_ore() {
 
   ore_ciphertext ctxt2;
   ERR_CHECK(init_ore_ciphertext(ctxt2, params));
-
-  ore_ciphertext ctxt3;
-  ERR_CHECK(init_ore_ciphertext(ctxt3, params));
 
   ERR_CHECK(ore_encrypt_ui(ctxt1, sk, n1));
   ERR_CHECK(ore_encrypt_ui(ctxt2, sk, n2));
