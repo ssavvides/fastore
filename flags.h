@@ -14,30 +14,13 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef __ERRORS_H__
-#define __ERRORS_H__
+#ifndef __FLAGS_H__
+#define __FLAGS_H__
 
-enum error_codes {
-  ERROR_NONE,
+// Set this flag to use AES as the underlying PRF (rather than HMAC).
+// Currently, we only support encrypting 64-bit values when AES is the underlying
+// PRF. The HMAC implementation supports encrypting larger messages.
 
-  ERROR_RANDOMNESS,
+#define USE_AES
 
-  ERROR_SRCLEN_INVALID,
-  ERROR_DSTLEN_INVALID,
-
-  ERROR_PRF_KEYLEN_INVALID,
-
-  ERROR_NULL_POINTER,
-  ERROR_MEMORY_ALLOCATION,
-
-  ERROR_PARAMS_MISMATCH,
-  ERROR_PARAMS_INVALID,
-
-  ERROR_SK_NOT_INITIALIZED,
-  ERROR_CTXT_NOT_INITIALIZED,
-
-  ERROR_UNSUPPORTED_OPERATION,
-};
-
-#endif /* __ERRORS_H__ */
-
+#endif /* __FLAGS_H__ */

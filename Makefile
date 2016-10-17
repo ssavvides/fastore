@@ -1,6 +1,6 @@
 CC = clang
 INCPATHS = -I/usr/local/include
-CFLAGS = -g -Wall -O3 $(INCPATHS)
+CFLAGS = -g -Wall -O3 $(INCPATHS) -march=native
 LDLIBS = -lgmp -lssl -lcrypto
 LDPATH = -L/usr/local/lib
 
@@ -8,7 +8,7 @@ BUILD = build
 TESTS = tests
 
 SRC = crypto.c ore.c
-TESTPROGS = test_ore
+TESTPROGS = test_ore time_ore
 
 OBJPATHS = $(patsubst %.c,$(BUILD)/%.o, $(SRC))
 TESTPATHS = $(addprefix $(TESTS)/, $(TESTPROGS))
