@@ -71,7 +71,7 @@ int ore_setup(ore_secret_key sk, ore_params params) {
     return ERROR_PARAMS_INVALID;
   }
 
-  int err = generate_prf_key(sk->keybuf, sizeof(sk->keybuf));
+  int err = generate_prf_key(sk->key);
   if (err != ERROR_NONE) {
     return err;
   }
@@ -127,6 +127,14 @@ static int _ore_encrypt_buf(ore_ciphertext ctxt, ore_secret_key sk, byte* buf,
     return ERROR_PARAMS_INVALID;
   }
 
+// Currently, the AES implementation does not support encrypting values with
+// more than 64 bits.
+#ifdef USE_AES
+  if (buflen > sizeof(uint64_t)) {
+    return ERROR_UNSUPPORTED_OPERATION;
+  }
+#endif
+
   uint32_t nbits = ctxt->params->nbits;
   uint32_t block_len = ctxt->params->block_len;
   uint32_t nbytes_block = (block_len + 7) / 8;
@@ -139,7 +147,11 @@ static int _ore_encrypt_buf(ore_ciphertext ctxt, ore_secret_key sk, byte* buf,
   mpz_sub_ui(block_mask, block_mask, 1);
 
   uint32_t nbytes = (nbits + 7) / 8;
+#ifdef USE_AES
+  byte prf_input_buf[PRF_INPUT_BYTES];
+#else
   byte prf_input_buf[sizeof(uint32_t) + nbytes];
+#endif
   memset(prf_input_buf, 0, sizeof(prf_input_buf));
 
   byte msgbuf[nbytes];
@@ -158,8 +170,8 @@ static int _ore_encrypt_buf(ore_ciphertext ctxt, ore_secret_key sk, byte* buf,
   uint32_t *index = (uint32_t*) prf_input_buf;
   byte* value = &prf_input_buf[1];
 
-  mpz_t block;
-  mpz_init(block);
+  mpz_t ctxt_block;
+  mpz_init(ctxt_block);
 
   uint32_t offset = (8 - (nbits % 8)) % 8;
   for (int i = 0; i < nbits; i++) {
@@ -168,18 +180,18 @@ static int _ore_encrypt_buf(ore_ciphertext ctxt, ore_secret_key sk, byte* buf,
     byte mask = msgbuf[byteind] & (1 << ((7 - (i + offset)) % 8));
 
     // evaluates the PRF on the prefix (starting with the empty string)
-    prf_eval(prf_output_buf, sizeof(prf_output_buf), sk->keybuf,
-        sizeof(sk->keybuf), prf_input_buf, sizeof(prf_input_buf));
+    prf_eval(prf_output_buf, sizeof(prf_output_buf), sk->key,
+             prf_input_buf, sizeof(prf_input_buf));
 
     // convert PRF outputs to a ciphertext block and OR it into the
     // ciphertext
-    mpz_import(block, nbytes_block, 1, 1, -1, 0, prf_output_buf);
+    mpz_import(ctxt_block, nbytes_block, 1, 1, -1, 0, prf_output_buf);
     if (mask > 0) {
-      mpz_add_ui(block, block, 1);
+      mpz_add_ui(ctxt_block, ctxt_block, 1);
     }
-    mpz_and(block, block, block_mask);
-    mpz_mul_2exp(block, block, (nbits - i - 1) * block_len);
-    mpz_ior(ctxt_val, ctxt_val, block);
+    mpz_and(ctxt_block, ctxt_block, block_mask);
+    mpz_mul_2exp(ctxt_block, ctxt_block, (nbits - i - 1) * block_len);
+    mpz_ior(ctxt_val, ctxt_val, ctxt_block);
 
     // add the current bit of the message to the running prefix
     value[byteind] |= mask;
@@ -199,7 +211,7 @@ static int _ore_encrypt_buf(ore_ciphertext ctxt, ore_secret_key sk, byte* buf,
   }
   mpz_clear(block_mask);
   mpz_clear(ctxt_val);
-  mpz_clear(block);
+  mpz_clear(ctxt_block);
 
   return ERROR_NONE;
 }
@@ -317,4 +329,8 @@ int clear_ore_ciphertext(ore_ciphertext ctxt) {
   memset(ctxt, 0, sizeof(ore_ciphertext));
 
   return ERROR_NONE;
+}
+
+int ore_ciphertext_size(ore_params params) {
+  return (params->nbits * params->block_len + 7) / 8;
 }

@@ -17,40 +17,62 @@
 #ifndef __CRYPTO_H__
 #define __CRYPTO_H__
 
+#include "errors.h"
+#include "flags.h"
+
 #include <openssl/evp.h>
-#include <openssl/aes.h>
 #include <stdint.h>
+
+#ifdef USE_AES
+#include "aes.h"
+#endif
 
 typedef unsigned char byte;
 
-static const int PRF_KEY_BYTES    = 32;
+// Structure representing a PRF key and output size of PRF.
+#ifdef USE_AES
+
+typedef struct {
+  AES_KEY key;
+} prf_key[1];
+
+static const int PRF_INPUT_BYTES  = 16;
+static const int PRF_OUTPUT_BYTES = 16;
+
+#else
+
+typedef struct {
+  byte keybuf[32];
+} prf_key[1];
+
 static const int PRF_OUTPUT_BYTES = 32;
+
+#endif
 
 /**
  * Reads from /dev/urandom to sample a PRF key.
  *
- * @param dst Byte array which will store the PRF key
- * @param dstlen Length of the destination byte array. Must match PRF_KEY_BYTES.
- * @return ERROR_NONE on success, ERROR_PRF_KEYLEN_INVALID if the destination
- * length is invalid, and ERROR_RANDOMNESS if reading from /dev/urandom failed.
+ * @param key The PRF key to construct
+ *
+ * @return ERROR_NONE on success and ERROR_RANDOMNESS if reading
+ * from /dev/urandom failed.
  */
-int generate_prf_key(byte* dst, uint32_t dstlen);
+int generate_prf_key(prf_key key);
 
 /**
- * Uses SHA256 to evaluate a PRF given a key and input (as byte arrays), storing
+ * Evaluates the PRF given a key and input (as byte arrays), storing
  * the result in a destination byte array.
  *
- * @param dst The destination byte array that will contain the output of the PRF
+ * @param dst    The destination byte array that will contain the output of the PRF
  * @param dstlen The size of the destination byte array
- * @param key The byte array containing the key for the PRF
- * @param keylen The size of the key byte array
- * @param src The byte array containing the input to the PRF
+ * @param key    The PRF key
+ * @param src    The byte array containing the input to the PRF
  * @param srclen The size of the input byte array
+ *
  * @return ERROR_NONE on success, ERROR_DSTLEN_INVALID if the destination size
- * is invalid, and ERROR_PRF_KEYLEN_INVALID if the key size is invalid.
+ *         is invalid
  */
-int prf_eval(byte* dst, uint32_t dstlen, byte* key, uint32_t keylen, byte* src,
-  uint32_t srclen);
+int prf_eval(byte* dst, uint32_t dstlen, prf_key key, byte* src, uint32_t srclen);
 
 #endif /* __CRYPTO_H__ */
 

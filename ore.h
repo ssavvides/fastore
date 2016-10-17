@@ -17,8 +17,11 @@
 #ifndef __ORE_H__
 #define __ORE_H__
 
-#include <stdbool.h>
 #include "crypto.h"
+#include "errors.h"
+#include "flags.h"
+
+#include <stdbool.h>
 
 // the public parameters for the encryption scheme, used to compare ciphertexts
 typedef struct {
@@ -29,8 +32,8 @@ typedef struct {
 
 // the secret key for the encryption scheme, used to perform encryption
 typedef struct {
-  bool initialized;   // whether or not the secret key has been initialized
-  byte         keybuf[PRF_KEY_BYTES];
+  bool         initialized;   // whether or not the secret key has been initialized
+  prf_key      key;
   ore_params   params;
 } ore_secret_key[1];
 
@@ -133,5 +136,14 @@ int init_ore_ciphertext(ore_ciphertext ctxt, ore_params params);
  * @return ERROR_NONE on success
  */
 int clear_ore_ciphertext(ore_ciphertext ctxt);
+
+/**
+ * Computes the size of an ORE ciphertext
+ *
+ * @param params The parameters for the ORE scheme
+ *
+ * @return the size of an ORE ciphertext
+ */
+int ore_ciphertext_size(ore_params params);
 
 #endif /* __ORE_H__ */

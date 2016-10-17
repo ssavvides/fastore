@@ -21,41 +21,57 @@
 #include <openssl/hmac.h>
 #include <openssl/sha.h>
 #include <stdint.h>
+#include <string.h>
 
-int generate_prf_key(byte* dst, uint32_t dstlen) {
-  if (dstlen != PRF_KEY_BYTES) {
-    return ERROR_PRF_KEYLEN_INVALID;
-  }
-
+int generate_prf_key(prf_key key) {
   FILE* f = fopen("/dev/urandom", "r");
   if (f == NULL) {
     return ERROR_RANDOMNESS;
   }
 
-  int bytes_read = fread(dst, 1, PRF_KEY_BYTES, f);
-  if (bytes_read != PRF_KEY_BYTES) {
+#ifdef USE_AES
+  byte keybuf[16];
+  int bytes_read = fread(keybuf, 1, sizeof(keybuf), f);
+  if (bytes_read != sizeof(keybuf)) {
     return ERROR_RANDOMNESS;
   }
+  AES_128_Key_Expansion(keybuf, &key->key);
+  memset(keybuf, 0, sizeof(keybuf));
+#else
+  int bytes_read = fread(key->keybuf, 1, sizeof(key->keybuf), f);
+  if (bytes_read != sizeof(key->keybuf)) {
+    return ERROR_RANDOMNESS;
+  }
+#endif
 
   fclose(f);
 
   return ERROR_NONE;
 }
 
-int prf_eval(byte* dst, uint32_t dstlen, byte* key, uint32_t keylen, byte* src,
-    uint32_t srclen) {
+
+int prf_eval(byte* dst, uint32_t dstlen, prf_key key, byte* src, uint32_t srclen) {
   if (dstlen != PRF_OUTPUT_BYTES) {
     return ERROR_DSTLEN_INVALID;
   }
 
-  if (keylen != PRF_KEY_BYTES) {
-    return ERROR_PRF_KEYLEN_INVALID;
+#ifdef USE_AES
+  if (srclen != PRF_INPUT_BYTES) {
+    return ERROR_SRCLEN_INVALID;
   }
+  block* dst_blk = (block*) dst;
+  block* src_blk = (block*) src;
 
+  *dst_blk = *src_blk;
+  AES_ecb_encrypt_blk(dst_blk, &key->key);
+
+  return ERROR_NONE;
+#else
   uint32_t outlen;
-  HMAC(EVP_sha256(), key, keylen, src, srclen, dst, &outlen);
+  HMAC(EVP_sha256(), key->keybuf, sizeof(key->keybuf), src, srclen, dst, &outlen);
   assert(outlen == dstlen);
 
   return ERROR_NONE;
+#endif
 }
 

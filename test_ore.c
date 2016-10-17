@@ -16,6 +16,7 @@
 
 #include "ore.h"
 #include "errors.h"
+#include "flags.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -23,11 +24,9 @@
 #define ERR_CHECK(x) if((err = x) != ERROR_NONE) { return err; }
 
 /**
- * Generates two random 64-bit integers and encrypts them, checking to make sure
- * that the ciphertexts are compared correctly.
- *
- * The ciphertexts are represented with parameters for which the number of bits
- * is 31 and the block length is a random integer between 2 and 31.
+ * Generates two random 31-bit integers and encrypts them, checking to make sure
+ * that the ciphertexts are compared correctly. The block length is
+ * randomly chosen between 2 and 31.
  *
  * The encrypted integers are also chosen randomly.
  *
@@ -94,7 +93,7 @@ int main(int argc, char** argv) {
   printf("Testing ORE... ");
   fflush(stdout);
 
-  for(int i = 0; i < 100; i++) {
+  for(int i = 0; i < 200; i++) {
     if(check_ore() != ERROR_NONE) {
       printf("FAIL\n");
       return -1;
