@@ -1,7 +1,9 @@
 # FastORE
 
-This is an implementation of the order-revealing encryption (ORE) scheme
-described here: https://eprint.iacr.org/2015/1125.pdf
+This is an implementation of the order-revealing encryption (ORE) schemes
+described in the following papers:
+  * [Practical Order-Revealing Encryption with Limited Leakage](https://eprint.iacr.org/2015/1125.pdf) (ore.h)
+  * [Order-Revealing Encryption: New Constructions, Applications, and Lower Bounds](http://eprint.iacr.org/2016/612.pdf) (ore_blk.h)
 
 This implementation is a research prototype mainly as a proof of concept, and is
 not intended to be used in production-level code as it has not been carefully
@@ -29,4 +31,3 @@ Make sure you have the following installed:
 ## Running a Test ##
 
   ./tests/test_ore
-

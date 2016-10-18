@@ -16,7 +16,7 @@
 
 /**
  * This is an implementation of the order-revealing encryption scheme from the
- * paper Practical Order-Revealing Encryption with Limited Leakage
+ * paper "Practical Order-Revealing Encryption with Limited Leakage"
  * (http://eprint.iacr.org/2015/1125) published in FSE, 2016. For options on
  * instantiating the PRF, refer to the "USE_AES" flag in flags.h. Currently,
  * we support instantiating the PRF using HMAC and AES. Note that the AES
@@ -60,6 +60,7 @@ typedef struct {
  * Initializes an ore_params type by setting its parameters, number of bits and
  * block length.
  *
+ * @param params      The params to initialize
  * @param nbits       The number of bits of an input to the encryption scheme
  * @param out_blk_len The length (in bits) of each block to be encrypted by a PRF
  *

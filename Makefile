@@ -7,8 +7,8 @@ LDPATH = -L/usr/local/lib
 BUILD = build
 TESTS = tests
 
-SRC = crypto.c ore.c
-TESTPROGS = test_ore time_ore
+SRC = crypto.c ore.c ore_blk.c
+TESTPROGS = test_ore time_ore test_ore_blk time_ore_blk
 
 OBJPATHS = $(patsubst %.c,$(BUILD)/%.o, $(SRC))
 TESTPATHS = $(addprefix $(TESTS)/, $(TESTPROGS))
