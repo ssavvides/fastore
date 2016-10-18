@@ -96,7 +96,7 @@ static void _seed_prg() {
  *
  * @param out  Buffer that will hold the next block of the PRG
  *
- * @return ERROR_NONE on successm and a corresponding error code on failure
+ * @return ERROR_NONE on success and a corresponding error code on failure
  *         (see errors.h for the full list of possible error codes)
  */
 static int _next_prg_block(block* out) {
@@ -148,7 +148,7 @@ int ore_blk_cleanup(ore_blk_secret_key sk) {
    * @param key  The key to the keyed hash function
    * @param val  The value to evaluate the hash function on
    *
-   * @return ERROR_NONE on successm and a corresponding error code on failure
+   * @return ERROR_NONE on success and a corresponding error code on failure
    *         (see errors.h for the full list of possible error codes)
    */
   static inline int _eval_keyed_hash_aes_ro(uint8_t* out, const block key, const block val) {
@@ -178,7 +178,7 @@ int ore_blk_cleanup(ore_blk_secret_key sk) {
    *                 hash function
    * @param val      The value to evaluate the hash functions on
    *
-   * @return ERROR_NONE on successm and a corresponding error code on failure
+   * @return ERROR_NONE on success and a corresponding error code on failure
    *         (see errors.h for the full list of possible error codes)
    */
   static inline int _eval_keyed_hash_batch_aes_ro(uint8_t* out, uint32_t nblocks,
@@ -208,7 +208,7 @@ int ore_blk_cleanup(ore_blk_secret_key sk) {
    * @param key  The key to the keyed hash function
    * @param val  The value to evaluate the hash function on
    *
-   * @return ERROR_NONE on successm and a corresponding error code on failure
+   * @return ERROR_NONE on success and a corresponding error code on failure
    *         (see errors.h for the full list of possible error codes)
    */
   static inline int _eval_keyed_hash_sha256(uint8_t* out, const block key, const block val) {
@@ -240,7 +240,7 @@ int ore_blk_cleanup(ore_blk_secret_key sk) {
  * @param key  The key to the keyed hash function
  * @param val  The value to evaluate the hash function on
  *
- * @return ERROR_NONE on successm and a corresponding error code on failure
+ * @return ERROR_NONE on success and a corresponding error code on failure
  *         (see errors.h for the full list of possible error codes)
  */
 static inline int _eval_keyed_hash(uint8_t* out, const block key, const block val) {
@@ -264,7 +264,7 @@ static inline int _eval_keyed_hash(uint8_t* out, const block key, const block va
  * @param keys     The vector of keys (of length nblocks) used to apply the hash function
  * @param val      The value to evaluate the hash functions on
  *
- * @return ERROR_NONE on successm and a corresponding error code on failure
+ * @return ERROR_NONE on success and a corresponding error code on failure
  *         (see errors.h for the full list of possible error codes)
  */
 static inline int _eval_keyed_hash_batch(uint8_t* out, uint32_t nblocks,
@@ -298,7 +298,7 @@ static inline int _eval_keyed_hash_batch(uint8_t* out, uint32_t nblocks,
   * @param val         The value of the block to be encrypted (at the current
   *                    index)
   *
-  * @return ERROR_NONE on successm and a corresponding error code on failure
+  * @return ERROR_NONE on success and a corresponding error code on failure
   *         (see errors.h for the full list of possible error codes)
   */
 static int _ore_blk_encrypt_block(byte* comp_left, byte* comp_right, ore_blk_secret_key sk,

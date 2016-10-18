@@ -144,7 +144,7 @@ int ore_blk_compare(int* result_p, ore_blk_ciphertext ctxt1, ore_blk_ciphertext 
  * @param ctxt   The ciphertext to initialize
  * @param params The parameters to initialize the ciphertext with
  *
- * @return ERROR_NONE on successm and a corresponding error code on failure
+ * @return ERROR_NONE on success and a corresponding error code on failure
  *         (see errors.h for the full list of possible error codes)
  */
 int init_ore_blk_ciphertext(ore_blk_ciphertext ctxt, ore_blk_params params);
@@ -154,7 +154,7 @@ int init_ore_blk_ciphertext(ore_blk_ciphertext ctxt, ore_blk_params params);
  *
  * @param ctxt The ciphertext to clear
  *
- * @return ERROR_NONE on successm and a corresponding error code on failure
+ * @return ERROR_NONE on success and a corresponding error code on failure
  *         (see errors.h for the full list of possible error codes)
  */
 int clear_ore_blk_ciphertext(ore_blk_ciphertext ctxt);
