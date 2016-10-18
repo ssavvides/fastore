@@ -3,7 +3,7 @@
 This is an implementation of the order-revealing encryption (ORE) schemes
 described in the following papers:
   * [Practical Order-Revealing Encryption with Limited Leakage](https://eprint.iacr.org/2015/1125.pdf) (ore.h)
-  * [Order-Revealing Encryption: New Constructions, Applications, and Lower Bounds](http://eprint.iacr.org/2016/612.pdf) (ore_blk.h)
+  * [Order-Revealing Encryption: New Constructions, Applications, and Lower Bounds](https://eprint.iacr.org/2016/612.pdf) (ore_blk.h)
 
 This implementation is a research prototype mainly as a proof of concept, and is
 not intended to be used in production-level code as it has not been carefully
@@ -19,8 +19,10 @@ Contact David for questions about the code:
 ## Prerequisites ##
 
 Make sure you have the following installed:
- * [GMP 5.x](http://gmplib.org/)
+ * [GMP 5](http://gmplib.org/)
  * [OpenSSL](http://www.openssl.org/source/)
+
+Currently, our system requires a processor that supports the AES-NI instruction set.
 
 ## Installation ##
 
@@ -28,6 +30,25 @@ Make sure you have the following installed:
     cd fastore
     make
 
-## Running a Test ##
+## Running Tests ##
 
-  ./tests/test_ore
+To test the basic ORE scheme (described in the first [paper](https://eprint.iacr.org/2015/1125.pdf)),
+use the following command:
+
+    ./tests/test_ore
+
+To test the "block ORE" scheme (described in the second [paper](https://eprint.iacr.org/2016/612.pdf)),
+use the following command:
+
+    ./tests/test_ore_blk
+
+## Running Benchmarks ##
+
+To run the benchmarks, use the commands:
+
+    ./tests/time_ore
+    ./tests/time_ore_blk
+
+## Additional Configuration ##
+
+See `flags.h` for additional configuration changes that are possible.
