@@ -40,8 +40,8 @@ static int check_ore_blk() {
   int nbits = 32;
   int block_len = 8;
 
-  uint64_t n1 = rand() % (1 << nbits);
-  uint64_t n2 = rand() % (1 << nbits);
+  uint64_t n1 = rand() % (((uint64_t) 1) << nbits);
+  uint64_t n2 = rand() % (((uint64_t) 1) << nbits);
 
   int cmp = (n1 < n2) ? -1 : 1;
   if (n1 == n2) {
