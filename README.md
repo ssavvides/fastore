@@ -1,13 +1,14 @@
 # FastORE
 
-This is an implementation of the order-revealing encryption (ORE) schemes
+This is a prototype implementation of the order-revealing encryption (ORE) schemes
 described in the following papers:
   * [Practical Order-Revealing Encryption with Limited Leakage](https://eprint.iacr.org/2015/1125.pdf) (ore.h)
   * [Order-Revealing Encryption: New Constructions, Applications, and Lower Bounds](https://eprint.iacr.org/2016/612.pdf) (ore_blk.h)
 
-This implementation is a research prototype mainly as a proof of concept, and is
-not intended to be used in production-level code as it has not been carefully
-analyzed for potential security flaws.
+This implementation is a research prototype and serves primarily as a proof of concept
+and benchmarking tool for our cryptographic primitives. The code has not been carefully
+analyzed for potential security flaws, and is not intended for use in production-level
+code.
 
 Authors:
  * David J. Wu, Stanford University
@@ -15,6 +16,8 @@ Authors:
 
 Contact David for questions about the code:
   dwu4@cs.stanford.edu
+  
+Project Website: https://crypto.stanford.edu/ore/
 
 ## Prerequisites ##
 
