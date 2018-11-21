@@ -2,7 +2,7 @@ CC = clang
 INCPATHS = -I/usr/local/include
 CFLAGS = -g -Wall -O3 $(INCPATHS) -march=native
 LDLIBS = -lgmp -lssl -lcrypto
-LDPATH = -L/usr/local/lib
+LDPATH = -L/usr/local/lib -L/usr/local/opt/openssl/lib
 
 BUILD = build
 TESTS = tests
